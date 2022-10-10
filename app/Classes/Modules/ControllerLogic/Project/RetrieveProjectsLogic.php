@@ -10,6 +10,7 @@ use App\Classes\Services\Authentication\IdentifiesUserFromRequest;
 use App\Models\UserRole;
 use App\Repositories\Eloquent\Projects;
 use App\Repositories\Eloquent\Tasks;
+use App\Traits\PaginatesData;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -17,6 +18,8 @@ use Illuminate\Http\Request;
  * @author    Yi Wen, Tan <yiwentan301@gmail.com>
  */
 class RetrieveProjectsLogic {
+    use PaginatesData;
+
     /** @var IdentifiesUserFromRequest */
     private IdentifiesUserFromRequest $identifiesUserFromRequest;
 
@@ -69,6 +72,19 @@ class RetrieveProjectsLogic {
             });
         }
 
-        return new JsonResponse($this->handlesApiResponseData->returnMany($projects, new ProjectTransformer()));
+        if ($request->query('q')) {
+            $projects = $projects->filter(function ($project) use ($request) {
+                return false !== stristr($project->name, $request->query('q'));
+            });
+        }
+
+        // Implements sort by field and direction
+        $sortDirection = $request->has('sortDirection') ? $request->query('sortDirection') : HandlesApiResponseData::DEFAULT_SORT_DIRECTION;
+        $sorted        = $projects->sortBy($request->query('sortBy') ?? HandlesApiResponseData::DEFAULT_SORT_BY,
+            SORT_REGULAR, strtoupper($sortDirection) === HandlesApiResponseData::DEFAULT_SORT_DIRECTION ? false : true);
+
+        $paginator = $this->getPaginatorForCollection($sorted->values(), $request);
+
+        return new JsonResponse($this->handlesApiResponseData->returnPaginated($paginator, new ProjectTransformer()));
     }
 }

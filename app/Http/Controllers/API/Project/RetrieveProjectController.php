@@ -20,6 +20,6 @@ class RetrieveProjectController extends Controller {
      * @return JsonResponse
      */
     public function execute(RetrieveProjectLogic $logic, Request $request): JsonResponse {
-        return $logic->execute($request->route('project_id'));
+        return $logic->execute($request);
     }
 }

@@ -20,6 +20,6 @@ class DeleteProjectController extends Controller {
      * @return JsonResponse
      */
     public function execute(DeleteProjectLogic $logic, Request $request): JsonResponse {
-        return $logic->execute($request->route('project_id'));
+        return $logic->execute($request);
     }
 }

@@ -7,6 +7,7 @@ namespace App\Http\Controllers\API\Project;
 use App\Classes\Modules\ControllerLogic\Project\RetrieveProjectsLogic;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 /**
  * @author    Yi Wen, Tan <yiwentan301@gmail.com>
@@ -14,10 +15,11 @@ use Illuminate\Http\JsonResponse;
 class RetrieveProjectsController extends Controller {
     /**
      * @param RetrieveProjectsLogic $logic
+     * @param Request               $request
      *
      * @return JsonResponse
      */
-    public function execute(RetrieveProjectsLogic $logic): JsonResponse {
-        return $logic->execute();
+    public function execute(RetrieveProjectsLogic $logic, Request $request): JsonResponse {
+        return $logic->execute($request);
     }
 }

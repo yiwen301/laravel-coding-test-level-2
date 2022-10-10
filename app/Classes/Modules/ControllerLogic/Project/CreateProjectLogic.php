@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace App\Classes\Modules\ControllerLogic\Project;
 
-use App\Classes\Services\Authentication\ExtractsTokenFromRequestHeader;
+use App\Classes\Services\Authentication\IdentifiesUserFromRequest;
 use App\Repositories\Eloquent\Projects;
-use App\Repositories\Eloquent\Sessions;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -18,11 +17,8 @@ use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
  * @author    Yi Wen, Tan <yiwentan301@gmail.com>
  */
 class CreateProjectLogic {
-    /** @var ExtractsTokenFromRequestHeader */
-    private ExtractsTokenFromRequestHeader $extractsTokenFromRequestHeader;
-
-    /** @var Sessions */
-    private Sessions $sessions;
+    /** @var IdentifiesUserFromRequest */
+    private IdentifiesUserFromRequest $identifiesUserFromRequest;
 
     /** @var Projects */
     private Projects $projects;
@@ -30,18 +26,15 @@ class CreateProjectLogic {
     /**
      * CreateProjectLogic constructor.
      *
-     * @param ExtractsTokenFromRequestHeader $extractsTokenFromRequestHeader
-     * @param Sessions                       $sessions
-     * @param Projects                       $projects
+     * @param IdentifiesUserFromRequest $identifiesUserFromRequest
+     * @param Projects                  $projects
      */
     public function __construct(
-        ExtractsTokenFromRequestHeader $extractsTokenFromRequestHeader,
-        Sessions $sessions,
+        IdentifiesUserFromRequest $identifiesUserFromRequest,
         Projects $projects
     ) {
-        $this->extractsTokenFromRequestHeader = $extractsTokenFromRequestHeader;
-        $this->sessions                       = $sessions;
-        $this->projects                       = $projects;
+        $this->identifiesUserFromRequest = $identifiesUserFromRequest;
+        $this->projects                  = $projects;
     }
 
     /**
@@ -50,8 +43,7 @@ class CreateProjectLogic {
      * @return JsonResponse
      */
     public function execute(Request $request): JsonResponse {
-        $token       = $this->extractsTokenFromRequestHeader->execute($request);
-        $session     = $this->sessions->getValidSessionsByToken($token)->first();
+        $user        = $this->identifiesUserFromRequest->execute($request);
         $projectName = $request->get('name');
 
         try {
@@ -63,7 +55,7 @@ class CreateProjectLogic {
             $this->projects->create([
                 'id'            => Uuid::uuid4(),
                 'name'          => $projectName,
-                'owner_user_id' => $session->user_id,
+                'owner_user_id' => $user->id,
                 'status_id'     => $request->get('status_id'),
                 'remark'        => $request->get('remark')
             ]);

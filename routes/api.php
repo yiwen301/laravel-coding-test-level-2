@@ -20,7 +20,7 @@ Route::post('v1/users/login', 'App\Http\Controllers\API\User\LoginAccountControl
 
 Route::group(['middleware' => ['api.user.secure']], function (): void {
     // User Logout
-    Route::delete('session', 'App\Http\Controllers\API\User\LogoutAccountController@execute')->name('logout');
+    Route::delete('/v1/users/session', 'App\Http\Controllers\API\User\LogoutAccountController@execute')->name('logout');
 
     // User management APIs
     Route::group(['prefix' => '/v1/users', 'middleware' => ['api.admin'], 'as' => 'users.'], function (): void {

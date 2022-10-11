@@ -8,6 +8,7 @@ use App\Classes\Modules\StructuredData\HandlesApiResponseData;
 use App\Classes\Modules\StructuredData\Transformers\ProjectTransformer;
 use App\Classes\Services\Authentication\IdentifiesUserFromRequest;
 use App\Classes\Services\Project\VerifiesTeamMemberHasAccessToProject;
+use App\Models\UserRole;
 use App\Repositories\Eloquent\Projects;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
@@ -59,7 +60,9 @@ class RetrieveProjectLogic {
         try {
             $user = $this->identifiesUserFromRequest->execute($request);
 
-            $this->verifiesTeamMemberHasAccessToProject->execute($request->route('project_id'), $user);
+            if ($user->role_id === UserRole::TEAM_MEMBER_ROLE) {
+                $this->verifiesTeamMemberHasAccessToProject->execute($request->route('project_id'), $user);
+            }
 
             $project = $this->projects->getById($request->route('project_id'));
 

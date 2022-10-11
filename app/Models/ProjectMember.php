@@ -11,17 +11,24 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 /**
  * @author    Yi Wen, Tan <yiwentan301@gmail.com>
  */
-final class Session extends Model {
+final class ProjectMember extends Model {
     use HasFactory;
 
     public $incrementing = true;
 
-    protected $table = 'session';
+    protected $table = 'project_member';
 
     protected $fillable = [
-        'user_id',
-        'token_hash',
+        'id',
+        'project_id',
+        'user_id'
     ];
+
+    protected $casts = ['project_id' => 'string', 'user_id' => 'string'];
+
+    public function project(): BelongsTo {
+        return $this->belongsTo(Project::class, 'project_id', 'id');
+    }
 
     public function user(): BelongsTo {
         return $this->belongsTo(User::class, 'user_id', 'id');

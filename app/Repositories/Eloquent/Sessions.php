@@ -7,6 +7,7 @@ namespace App\Repositories\Eloquent;
 use App\Models\Session;
 use App\Repositories\BaseRepository;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 
 /**
@@ -34,6 +35,15 @@ class Sessions extends BaseRepository {
     public function getValidSessionsByToken(string $token): Collection {
         return $this->model->where('token_hash', '=', md5($token))->where('created_at', '>', Carbon::now()->subHour())
                            ->get();
+    }
+
+    /**
+     * @param string $token
+     *
+     * @return Model
+     */
+    public function getSessionByToken(string $token): Model {
+        return $this->findBy('token_hash', md5($token));
     }
 
     /**

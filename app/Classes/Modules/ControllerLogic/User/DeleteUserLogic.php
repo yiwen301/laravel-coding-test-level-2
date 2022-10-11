@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace App\Classes\Modules\ControllerLogic\User;
 
-use App\Classes\Services\Authentication\ExtractsTokenFromRequestHeader;
-use App\Repositories\Eloquent\Sessions;
+use App\Classes\Services\Authentication\IdentifiesUserFromRequest;
 use App\Repositories\Eloquent\Users;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
@@ -17,11 +16,8 @@ use Symfony\Component\Routing\Exception\ResourceNotFoundException;
  * @author    Yi Wen, Tan <yiwentan301@gmail.com>
  */
 class DeleteUserLogic {
-    /** @var ExtractsTokenFromRequestHeader */
-    private ExtractsTokenFromRequestHeader $extractsTokenFromRequestHeader;
-
-    /** @var Sessions */
-    private Sessions $sessions;
+    /** @var IdentifiesUserFromRequest */
+    private IdentifiesUserFromRequest $identifiesUserFromRequest;
 
     /** @var Users */
     private Users $users;
@@ -29,18 +25,15 @@ class DeleteUserLogic {
     /**
      * DeleteUserLogic constructor.
      *
-     * @param ExtractsTokenFromRequestHeader $extractsTokenFromRequestHeader
-     * @param Sessions                       $sessions
-     * @param Users                          $users
+     * @param IdentifiesUserFromRequest $identifiesUserFromRequest
+     * @param Users                     $users
      */
     public function __construct(
-        ExtractsTokenFromRequestHeader $extractsTokenFromRequestHeader,
-        Sessions $sessions,
+        IdentifiesUserFromRequest $identifiesUserFromRequest,
         Users $users
     ) {
-        $this->extractsTokenFromRequestHeader = $extractsTokenFromRequestHeader;
-        $this->sessions                       = $sessions;
-        $this->users                          = $users;
+        $this->identifiesUserFromRequest = $identifiesUserFromRequest;
+        $this->users                     = $users;
     }
 
     /**
@@ -50,16 +43,15 @@ class DeleteUserLogic {
      */
     public function execute(Request $request): JsonResponse {
         try {
-            $token  = $this->extractsTokenFromRequestHeader->execute($request);
-            $userId = $request->route('user_id');
+            $requestUser = $this->identifiesUserFromRequest->execute($request);
+            $userId      = $request->route('user_id');
 
             // Make sure admin does not remove him/herself
-            $session = $this->sessions->getValidSessionsByToken($token)->first();
-            if ($session->user_id === $userId) {
+            if ($requestUser->id === $userId) {
                 throw new \InvalidArgumentException('You are not allowed to remove yourself.');
             }
 
-            // Verify user does not have any project or task before being removed
+            // Verify target user does not have any project or task before being removed
             $user = $this->users->getById($userId);
             if (count($user->projects) > 0 && count($user->tasks) > 0) {
                 throw new PreconditionFailedHttpException('User is having one or more projects or tasks, he or she cannot be removed.');

@@ -13,6 +13,8 @@ class ValidatesProject {
             'name'      => 'required|string|min:5',
             'status_id' => 'required|int|min:1|max:5',
             'remarks'   => 'sometimes|string|nullable',
+            'members'   => 'sometimes|array|nullable',
+            'members.*' => 'required|string|exists:App\Models\User,id',
         ];
     }
 
